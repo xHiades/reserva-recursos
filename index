@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reserva de Recursos Escolares</title>
+
+  <style>
+    :root {
+      --azul: #1f3a5f;
+      --azul-oscuro: #14263d;
+      --fondo: #eef2f7;
+      --tarjeta: #ffffff;
+      --texto: #1f2937;
+      --gris: #6b7280;
+      --borde: #d8dee9;
+      --ok: #15803d;
+      --error: #b91c1c;
+
+      --tv-bg: #dbeafe;
+      --tv-border: #2563eb;
+      --tv-text: #1d4ed8;
+
+      --tablets-bg: #dcfce7;
+      --tablets-border: #16a34a;
+      --tablets-text: #15803d;
+
+      --proyector-bg: #fef3c7;
+      --proyector-border: #d97706;
+      --proyector-text: #b45309;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 32%),
+        radial-gradient(circle at top right, rgba(22, 163, 74, 0.14), transparent 28%),
+        var(--fondo);
+      color: var(--texto);
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--azul), var(--azul-oscuro));
+      color: white;
+      padding: 30px 18px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(26px, 4vw, 38px);
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      color: #dbeafe;
+      font-size: 16px;
+    }
+
+    main {
+      max-width: 1280px;
+      margin: 28px auto;
+      padding: 0 16px 40px;
+    }
+
+    .contenedor {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel,
+    .calendario-panel {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(216, 222, 233, 0.8);
+      border-radius: 22px;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+    }
+
+    .panel {
+      padding: 22px;
+      position: sticky;
+      top: 18px;
+    }
+
+    .calendario-panel {
+      padding: 22px;
+      overflow: hidden;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      color: var(--azul);
+      font-size: 22px;
+      letter-spacing: -0.2px;
+    }
+
+    .subtexto {
+      color: var(--gris);
+      font-size: 14px;
+      margin-top: -8px;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    label {
+      display: block;
+      margin-top: 14px;
+      margin-bottom: 7px;
+      font-weight: 700;
+      font-size: 14px;
+      color: #334155;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--borde);
+      border-radius: 12px;
+      font-size: 15px;
+      background: #fff;
+      color: var(--texto);
+      outline: none;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.14);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 72px;
+    }
+
+    .modulos-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .modulo-opcion input {
+      display: none;
+    }
+
+    .modulo-opcion span {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px 6px;
+      border: 1px solid var(--borde);
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #475569;
+      background: #f8fafc;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .modulo-opcion input:checked + span {
+      background: var(--azul);
+      color: white;
+      border-color: var(--azul);
+      box-shadow: 0 8px 18px rgba(31, 58, 95, 0.25);
+    }
+
+    .modulo-opcion span:hover {
+      border-color: var(--azul);
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      font-weight: 800;
+      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-principal {
+      margin-top: 20px;
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, var(--azul), #315b92);
+      color: white;
+      border-radius: 14px;
+      font-size: 16px;
+      box-shadow: 0 12px 24px rgba(31, 58, 95, 0.28);
+    }
+
+    .btn-principal:hover {
+      background: linear-gradient(135deg, var(--azul-oscuro), var(--azul));
+    }
+
+    .mensaje {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 12px;
+      display: none;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .mensaje.ok {
+      display: block;
+      background: #ecfdf5;
+      color: var(--ok);
+      border: 1px solid #bbf7d0;
+    }
+
+    .mensaje.error {
+      display: block;
+      background: #fef2f2;
+      color: var(--error);
+      border: 1px solid #fecaca;
+    }
+
+    .ayuda {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.45;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      padding: 12px;
+      border-radius: 14px;
+      margin-top: 16px;
+    }
+
+    .calendario-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .calendario-header h2 {
+      margin: 0;
+    }
+
+    .botones-mes {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-secundario {
+      padding: 9px 12px;
+      border-radius: 12px;
+      background: #f1f5f9;
+      color: var(--azul);
+      border: 1px solid #dbe3ee;
+      font-size: 14px;
+    }
+
+    .btn-secundario:hover {
+      background: #e2e8f0;
+    }
+
+    .filtros-calendario {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+      padding: 14px;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+    }
+
+    .filtros-calendario label {
+      margin-top: 0;
+    }
+
+    .leyenda {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .chip-leyenda {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      color: #334155;
+    }
+
+    .punto {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .punto.tv {
+      background: var(--tv-border);
+    }
+
+    .punto.tablets {
+      background: var(--tablets-border);
+    }
+
+    .punto.proyector {
+      background: var(--proyector-border);
+    }
+
+    .dias-semana {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      background: #e8edf5;
+      border-radius: 16px 16px 0 0;
+      overflow: hidden;
+      border: 1px solid #d8dee9;
+      border-bottom: none;
+    }
+
+    .dias-semana div {
+      padding: 11px;
+      text-align: center;
+      font-weight: 800;
+      color: var(--azul);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .calendario {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      border-left: 1px solid #d8dee9;
+      border-top: 1px solid #d8dee9;
+      border-radius: 0 0 16px 16px;
+      overflow: hidden;
+      background: white;
+    }
+
+    .dia {
+      min-height: 165px;
+      padding: 9px;
+      border-right: 1px solid #d8dee9;
+      border-bottom: 1px solid #d8dee9;
+      background: #fff;
+      position: relative;
+    }
+
+    .dia.vacio {
+      background: #f1f5f9;
+    }
+
+    .numero-dia {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 6px;
+    }
+
+    .numero-dia strong {
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 999px;
+      color: var(--azul);
+      font-size: 14px;
+    }
+
+    .cantidad-reservas {
+      font-size: 11px;
+      color: #64748b;
+      background: #f1f5f9;
+      padding: 4px 7px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .hoy .numero-dia strong {
+      background: var(--azul);
+      color: white;
+    }
+
+    .reserva {
+      border-radius: 12px;
+      padding: 8px;
+      margin-bottom: 7px;
+      font-size: 12px;
+      line-height: 1.3;
+      border: 1px solid transparent;
+      border-left-width: 5px;
+      box-shadow: 0 5px 12px rgba(15, 23, 42, 0.06);
+    }
+
+    .reserva.tv {
+      background: var(--tv-bg);
+      border-color: #bfdbfe;
+      border-left-color: var(--tv-border);
+      color: var(--tv-text);
+    }
+
+    .reserva.tablets {
+      background: var(--tablets-bg);
+      border-color: #bbf7d0;
+      border-left-color: var(--tablets-border);
+      color: var(--tablets-text);
+    }
+
+    .reserva.proyector {
+      background: var(--proyector-bg);
+      border-color: #fde68a;
+      border-left-color: var(--proyector-border);
+      color: var(--proyector-text);
+    }
+
+    .reserva-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 5px;
+      margin-bottom: 4px;
+    }
+
+    .reserva strong {
+      display: block;
+      font-size: 13px;
+      line-height: 1.2;
+    }
+
+    .badge-modulos {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .badge-modulos span {
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      padding: 3px 6px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .detalle-reserva {
+      display: block;
+      color: #334155;
+      margin-top: 3px;
+    }
+
+    .btn-cancelar {
+      padding: 5px 7px;
+      background: rgba(185, 28, 28, 0.92);
+      color: white;
+      font-size: 11px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    .btn-cancelar:hover {
+      background: #991b1b;
+    }
+
+    .sin-reservas {
+      color: #94a3b8;
+      font-style: italic;
+      font-size: 13px;
+      margin-top: 12px;
+    }
+
+    .ocupado {
+      font-size: 12px;
+      margin-top: 8px;
+      padding: 9px;
+      border-radius: 12px;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      color: #9a3412;
+      display: none;
+      line-height: 1.4;
+    }
+
+    .ocupado.visible {
+      display: block;
+    }
+
+    .estado-carga {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    .estado-carga.visible {
+      display: block;
+    }
+
+    @media (max-width: 1050px) {
+      .contenedor {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 760px) {
+      main {
+        padding: 0 10px 30px;
+      }
+
+      .panel,
+      .calendario-panel {
+        border-radius: 18px;
+        padding: 16px;
+      }
+
+      .filtros-calendario {
+        grid-template-columns: 1fr;
+      }
+
+      .calendario-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .botones-mes {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .dias-semana {
+        display: none;
+      }
+
+      .calendario {
+        display: block;
+        border-radius: 16px;
+      }
+
+      .dia {
+        min-height: auto;
+        border-right: none;
+      }
+
+      .dia.vacio {
+        display: none;
+      }
+
+      .modulos-grid {
+        grid-template-columns: repeat(5, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Reserva de Recursos Escolares</h1>
+    <p>Calendario institucional para TV, tablets y proyector</p>
+  </header>
+
+  <main>
+    <div class="contenedor">
+
+      <section class="panel">
+        <h2>Nueva reserva</h2>
+        <p class="subtexto">Seleccioná el grado, el recurso y uno o varios módulos.</p>
+
+        <form id="formReserva">
+          <label for="grado">Grado y división</label>
+          <select id="grado" name="grado" required>
+            <option value="">Seleccionar grado</option>
+            <option value="1° A">1° A</option>
+            <option value="1° B">1° B</option>
+            <option value="2° A">2° A</option>
+            <option value="2° B">2° B</option>
+            <option value="3° A">3° A</option>
+            <option value="3° B">3° B</option>
+            <option value="4° A">4° A</option>
+            <option value="4° B">4° B</option>
+            <option value="5° A">5° A</option>
+            <option value="5° B">5° B</option>
+            <option value="6° A">6° A</option>
+            <option value="6° B">6° B</option>
+            <option value="7° A">7° A</option>
+            <option value="7° B">7° B</option>
+          </select>
+
+          <label for="recurso">Recurso</label>
+          <select id="recurso" name="recurso" required>
+            <option value="">Seleccionar recurso</option>
+            <option value="TV">TV</option>
+            <option value="Tablets">Tablets</option>
+            <option value="Proyector">Proyector</option>
+          </select>
+
+          <label for="fecha">Fecha</label>
+          <input type="date" id="fecha" name="fecha" required />
+
+          <label for="turno">Turno</label>
+          <select id="turno" name="turno" required>
+            <option value="">Seleccionar turno</option>
+            <option value="Mañana">Mañana</option>
+            <option value="Tarde">Tarde</option>
+          </select>
+
+          <label>Módulos</label>
+          <div class="modulos-grid">
+            <label class="modulo-opcion">
+              <input type="checkbox" name="modulos" value="Módulo 1" />
+              <span>1</span>
+            </label>
+
+            <label class="modulo-opcion">
+              <input type="checkbox" name="modulos" value="Módulo 2" />
+              <span>2</span>
+            </label>
+
+            <label class="modulo-opcion">
+              <input type="checkbox" name="modulos" value="Módulo 3" />
+              <span>3</span>
+            </label>
+
+            <label class="modulo-opcion">
+              <input type="checkbox" name="modulos" value="Módulo 4" />
+              <span>4</span>
+            </label>
+
+            <label class="modulo-opcion">
+              <input type="checkbox" name="modulos" value="Módulo 5" />
+              <span>5</span>
+            </label>
+          </div>
+
+          <div id="avisoOcupado" class="ocupado"></div>
+
+          <label for="actividad">Área o actividad</label>
+          <input
+            type="text"
+            id="actividad"
+            name="actividad"
+            placeholder="Ej: video, investigación, presentación..."
+            required
+          />
+
+          <label for="observaciones">Observaciones</label>
+          <textarea
+            id="observaciones"
+            name="observaciones"
+            placeholder="Opcional"
+          ></textarea>
+
+          <button type="submit" class="btn-principal" id="btnReservar">
+            Reservar recurso
+          </button>
+
+          <div id="mensaje" class="mensaje"></div>
+        </form>
+
+        <div class="ayuda">
+          Si un recurso ya está reservado en la misma fecha, turno y módulo, el sistema no permite volver a reservarlo.
+        </div>
+      </section>
+
+      <section class="calendario-panel">
+        <div class="calendario-header">
+          <h2 id="tituloMes">Calendario</h2>
+
+          <div class="botones-mes">
+            <button type="button" class="btn-secundario" id="mesAnterior">Mes anterior</button>
+            <button type="button" class="btn-secundario" id="mesActual">Hoy</button>
+            <button type="button" class="btn-secundario" id="mesSiguiente">Mes siguiente</button>
+          </div>
+        </div>
+
+        <div id="estadoCarga" class="estado-carga">Cargando reservas...</div>
+
+        <div class="leyenda">
+          <span class="chip-leyenda"><span class="punto tv"></span>TV</span>
+          <span class="chip-leyenda"><span class="punto tablets"></span>Tablets</span>
+          <span class="chip-leyenda"><span class="punto proyector"></span>Proyector</span>
+        </div>
+
+        <div class="filtros-calendario">
+          <div>
+            <label for="filtroRecurso">Recurso</label>
+            <select id="filtroRecurso">
+              <option value="">Todos</option>
+              <option value="TV">TV</option>
+              <option value="Tablets">Tablets</option>
+              <option value="Proyector">Proyector</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="filtroTurno">Turno</label>
+            <select id="filtroTurno">
+              <option value="">Todos</option>
+              <option value="Mañana">Mañana</option>
+              <option value="Tarde">Tarde</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="filtroGrado">Grado</label>
+            <select id="filtroGrado">
+              <option value="">Todos</option>
+              <option value="1° A">1° A</option>
+              <option value="1° B">1° B</option>
+              <option value="2° A">2° A</option>
+              <option value="2° B">2° B</option>
+              <option value="3° A">3° A</option>
+              <option value="3° B">3° B</option>
+              <option value="4° A">4° A</option>
+              <option value="4° B">4° B</option>
+              <option value="5° A">5° A</option>
+              <option value="5° B">5° B</option>
+              <option value="6° A">6° A</option>
+              <option value="6° B">6° B</option>
+              <option value="7° A">7° A</option>
+              <option value="7° B">7° B</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="dias-semana">
+          <div>Lun</div>
+          <div>Mar</div>
+          <div>Mié</div>
+          <div>Jue</div>
+          <div>Vie</div>
+          <div>Sáb</div>
+          <div>Dom</div>
+        </div>
+
+        <div id="calendario" class="calendario"></div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    const URL_APPS_SCRIPT = "https://script.google.com/macros/s/AKfycbxG61hpN09wHcTX8X5kSWE6G_s6nHzl0eXZG1b5crLHVhzGhgy8BQIgXc4DI4fJGd_t/exec";
+    const CLAVE_INSTITUCIONAL = "escuela328";
+
+    const formReserva = document.getElementById("formReserva");
+    const mensaje = document.getElementById("mensaje");
+    const calendario = document.getElementById("calendario");
+    const tituloMes = document.getElementById("tituloMes");
+    const avisoOcupado = document.getElementById("avisoOcupado");
+    const estadoCarga = document.getElementById("estadoCarga");
+    const btnReservar = document.getElementById("btnReservar");
+
+    const filtroRecurso = document.getElementById("filtroRecurso");
+    const filtroTurno = document.getElementById("filtroTurno");
+    const filtroGrado = document.getElementById("filtroGrado");
+
+    const btnMesAnterior = document.getElementById("mesAnterior");
+    const btnMesActual = document.getElementById("mesActual");
+    const btnMesSiguiente = document.getElementById("mesSiguiente");
+
+    const inputGrado = document.getElementById("grado");
+    const inputRecurso = document.getElementById("recurso");
+    const inputFecha = document.getElementById("fecha");
+    const inputTurno = document.getElementById("turno");
+
+    let reservas = [];
+
+    let fechaVista = new Date();
+    let mesActual = fechaVista.getMonth();
+    let anioActual = fechaVista.getFullYear();
+
+    document.addEventListener("DOMContentLoaded", async function () {
+      await cargarReservas();
+      mostrarCalendario();
+    });
+
+    formReserva.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const modulosSeleccionados = obtenerModulosSeleccionados();
+
+      if (modulosSeleccionados.length === 0) {
+        mostrarMensaje("Tenés que seleccionar al menos un módulo.", "error");
+        return;
+      }
+
+      const nuevaReserva = {
+        accion: "crear",
+        clave: CLAVE_INSTITUCIONAL,
+        grado: inputGrado.value,
+        recurso: inputRecurso.value,
+        fecha: inputFecha.value,
+        turno: inputTurno.value,
+        modulos: modulosSeleccionados,
+        actividad: document.getElementById("actividad").value.trim(),
+        observaciones: document.getElementById("observaciones").value.trim()
+      };
+
+      const conflictosLocales = buscarConflictos(nuevaReserva, reservas);
+
+      if (conflictosLocales.length > 0) {
+        mostrarConflictos(conflictosLocales);
+        return;
+      }
+
+      btnReservar.disabled = true;
+      btnReservar.textContent = "Guardando...";
+      mostrarMensaje("Guardando reserva...", "ok");
+
+      const respuesta = await enviarDatos(nuevaReserva);
+
+      btnReservar.disabled = false;
+      btnReservar.textContent = "Reservar recurso";
+
+      if (!respuesta.ok) {
+        if (respuesta.conflictos && respuesta.conflictos.length > 0) {
+          mostrarConflictos(respuesta.conflictos);
+        } else {
+          mostrarMensaje(respuesta.mensaje || "No se pudo guardar la reserva.", "error");
+        }
+
+        return;
+      }
+
+      await cargarReservas();
+
+      const fechaSeleccionada = new Date(nuevaReserva.fecha + "T00:00:00");
+      mesActual = fechaSeleccionada.getMonth();
+      anioActual = fechaSeleccionada.getFullYear();
+
+      formReserva.reset();
+      avisoOcupado.classList.remove("visible");
+      avisoOcupado.textContent = "";
+
+      mostrarMensaje("La reserva fue registrada correctamente.", "ok");
+      mostrarCalendario();
+    });
+
+    filtroRecurso.addEventListener("change", mostrarCalendario);
+    filtroTurno.addEventListener("change", mostrarCalendario);
+    filtroGrado.addEventListener("change", mostrarCalendario);
+
+    inputRecurso.addEventListener("change", actualizarAvisoOcupado);
+    inputFecha.addEventListener("change", actualizarAvisoOcupado);
+    inputTurno.addEventListener("change", actualizarAvisoOcupado);
+
+    document.querySelectorAll('input[name="modulos"]').forEach(function (checkbox) {
+      checkbox.addEventListener("change", actualizarAvisoOcupado);
+    });
+
+    btnMesAnterior.addEventListener("click", function () {
+      mesActual--;
+
+      if (mesActual < 0) {
+        mesActual = 11;
+        anioActual--;
+      }
+
+      mostrarCalendario();
+    });
+
+    btnMesSiguiente.addEventListener("click", function () {
+      mesActual++;
+
+      if (mesActual > 11) {
+        mesActual = 0;
+        anioActual++;
+      }
+
+      mostrarCalendario();
+    });
+
+    btnMesActual.addEventListener("click", function () {
+      const hoy = new Date();
+      mesActual = hoy.getMonth();
+      anioActual = hoy.getFullYear();
+      mostrarCalendario();
+    });
+
+    async function cargarReservas() {
+      try {
+        estadoCarga.classList.add("visible");
+        estadoCarga.textContent = "Cargando reservas...";
+
+        const respuesta = await fetch(URL_APPS_SCRIPT + "?accion=listar");
+        const datos = await respuesta.json();
+
+        if (datos.ok) {
+          reservas = datos.reservas || [];
+          estadoCarga.textContent = "Reservas actualizadas.";
+          setTimeout(function () {
+            estadoCarga.classList.remove("visible");
+          }, 1800);
+        } else {
+          estadoCarga.classList.remove("visible");
+          mostrarMensaje(datos.mensaje || "No se pudieron cargar las reservas.", "error");
+        }
+      } catch (error) {
+        estadoCarga.classList.remove("visible");
+        mostrarMensaje("No se pudo conectar con la planilla.", "error");
+        console.error(error);
+      }
+    }
+
+    async function enviarDatos(datos) {
+      try {
+        const respuesta = await fetch(URL_APPS_SCRIPT, {
+          method: "POST",
+          body: JSON.stringify(datos)
+        });
+
+        return await respuesta.json();
+
+      } catch (error) {
+        console.error(error);
+
+        return {
+          ok: false,
+          mensaje: "No se pudo conectar con Apps Script."
+        };
+      }
+    }
+
+    function obtenerModulosSeleccionados() {
+      return Array.from(document.querySelectorAll('input[name="modulos"]:checked'))
+        .map(function (checkbox) {
+          return checkbox.value;
+        });
+    }
+
+    function buscarConflictos(nuevaReserva, reservasActuales) {
+      const conflictos = [];
+
+      reservasActuales.forEach(function (reserva) {
+        if (
+          reserva.estado === "Confirmada" &&
+          reserva.recurso === nuevaReserva.recurso &&
+          reserva.fecha === nuevaReserva.fecha &&
+          reserva.turno === nuevaReserva.turno
+        ) {
+          const modulosReserva = normalizarModulos(reserva);
+
+          nuevaReserva.modulos.forEach(function (moduloNuevo) {
+            if (modulosReserva.includes(moduloNuevo)) {
+              conflictos.push({
+                modulo: moduloNuevo,
+                grado: reserva.grado,
+                actividad: reserva.actividad
+              });
+            }
+          });
+        }
+      });
+
+      return conflictos;
+    }
+
+    function mostrarConflictos(conflictos) {
+      const textoConflictos = conflictos.map(function (conflicto) {
+        return conflicto.modulo + " reservado por " + conflicto.grado;
+      }).join(", ");
+
+      mostrarMensaje(
+        "No se puede reservar. Ya hay módulos ocupados: " + textoConflictos + ".",
+        "error"
+      );
+
+      actualizarAvisoOcupado();
+    }
+
+    function actualizarAvisoOcupado() {
+      const recurso = inputRecurso.value;
+      const fecha = inputFecha.value;
+      const turno = inputTurno.value;
+      const modulos = obtenerModulosSeleccionados();
+
+      if (!recurso || !fecha || !turno || modulos.length === 0) {
+        avisoOcupado.classList.remove("visible");
+        avisoOcupado.textContent = "";
+        return;
+      }
+
+      const reservaTemporal = {
+        recurso: recurso,
+        fecha: fecha,
+        turno: turno,
+        modulos: modulos
+      };
+
+      const conflictos = buscarConflictos(reservaTemporal, reservas);
+
+      if (conflictos.length === 0) {
+        avisoOcupado.classList.remove("visible");
+        avisoOcupado.textContent = "";
+        return;
+      }
+
+      const texto = conflictos.map(function (conflicto) {
+        return conflicto.modulo + " ya está ocupado por " + conflicto.grado;
+      }).join(". ");
+
+      avisoOcupado.textContent = texto + ".";
+      avisoOcupado.classList.add("visible");
+    }
+
+    function mostrarMensaje(texto, tipo) {
+      mensaje.textContent = texto;
+      mensaje.className = "mensaje " + tipo;
+
+      setTimeout(function () {
+        mensaje.className = "mensaje";
+        mensaje.textContent = "";
+      }, 4500);
+    }
+
+    function mostrarCalendario() {
+      calendario.innerHTML = "";
+
+      const nombresMeses = [
+        "enero", "febrero", "marzo", "abril", "mayo", "junio",
+        "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+      ];
+
+      tituloMes.textContent =
+        "Calendario de reservas - " +
+        nombresMeses[mesActual] +
+        " de " +
+        anioActual;
+
+      const primerDiaMes = new Date(anioActual, mesActual, 1);
+      const ultimoDiaMes = new Date(anioActual, mesActual + 1, 0);
+
+      let diaSemanaInicio = primerDiaMes.getDay();
+
+      if (diaSemanaInicio === 0) {
+        diaSemanaInicio = 7;
+      }
+
+      const espaciosAntes = diaSemanaInicio - 1;
+      const cantidadDias = ultimoDiaMes.getDate();
+
+      for (let i = 0; i < espaciosAntes; i++) {
+        const diaVacio = document.createElement("div");
+        diaVacio.className = "dia vacio";
+        calendario.appendChild(diaVacio);
+      }
+
+      for (let dia = 1; dia <= cantidadDias; dia++) {
+        const fechaISO = crearFechaISO(anioActual, mesActual, dia);
+        const divDia = document.createElement("div");
+        divDia.className = "dia";
+
+        if (esHoy(anioActual, mesActual, dia)) {
+          divDia.classList.add("hoy");
+        }
+
+        const reservasDelDia = obtenerReservasFiltradas(fechaISO);
+
+        const numeroDia = document.createElement("div");
+        numeroDia.className = "numero-dia";
+
+        numeroDia.innerHTML = `
+          <strong>${dia}</strong>
+          <span class="cantidad-reservas">${reservasDelDia.length} reserva${reservasDelDia.length === 1 ? "" : "s"}</span>
+        `;
+
+        divDia.appendChild(numeroDia);
+
+        if (reservasDelDia.length === 0) {
+          const textoSinReservas = document.createElement("div");
+          textoSinReservas.className = "sin-reservas";
+          textoSinReservas.textContent = "Sin reservas";
+          divDia.appendChild(textoSinReservas);
+        } else {
+          reservasDelDia.forEach(function (reserva) {
+            const tarjeta = document.createElement("div");
+            tarjeta.className = "reserva " + claseRecurso(reserva.recurso);
+
+            const modulosReserva = normalizarModulos(reserva);
+
+            tarjeta.innerHTML = `
+              <div class="reserva-top">
+                <strong>${reserva.recurso}</strong>
+                <button class="btn-cancelar" onclick="cancelarReserva('${reserva.id}')">
+                  Cancelar
+                </button>
+              </div>
+
+              <span class="detalle-reserva">${reserva.turno} - ${reserva.grado}</span>
+
+              <div class="badge-modulos">
+                ${modulosReserva.map(function (modulo) {
+                  return "<span>" + modulo.replace("Módulo ", "M") + "</span>";
+                }).join("")}
+              </div>
+
+              <span class="detalle-reserva">${reserva.actividad || ""}</span>
+            `;
+
+            divDia.appendChild(tarjeta);
+          });
+        }
+
+        calendario.appendChild(divDia);
+      }
+    }
+
+    function obtenerReservasFiltradas(fechaISO) {
+      const recursoSeleccionado = filtroRecurso.value;
+      const turnoSeleccionado = filtroTurno.value;
+      const gradoSeleccionado = filtroGrado.value;
+
+      let reservasFiltradas = reservas.filter(function (reserva) {
+        return (
+          reserva.fecha === fechaISO &&
+          reserva.estado === "Confirmada"
+        );
+      });
+
+      if (recursoSeleccionado) {
+        reservasFiltradas = reservasFiltradas.filter(function (reserva) {
+          return reserva.recurso === recursoSeleccionado;
+        });
+      }
+
+      if (turnoSeleccionado) {
+        reservasFiltradas = reservasFiltradas.filter(function (reserva) {
+          return reserva.turno === turnoSeleccionado;
+        });
+      }
+
+      if (gradoSeleccionado) {
+        reservasFiltradas = reservasFiltradas.filter(function (reserva) {
+          return reserva.grado === gradoSeleccionado;
+        });
+      }
+
+      reservasFiltradas.sort(function (a, b) {
+        const ordenTurno = a.turno.localeCompare(b.turno);
+        if (ordenTurno !== 0) return ordenTurno;
+
+        const moduloA = normalizarModulos(a)[0] || "";
+        const moduloB = normalizarModulos(b)[0] || "";
+
+        return moduloA.localeCompare(moduloB);
+      });
+
+      return reservasFiltradas;
+    }
+
+    async function cancelarReserva(id) {
+      const confirmar = confirm("¿Querés cancelar esta reserva?");
+
+      if (!confirmar) {
+        return;
+      }
+
+      const respuesta = await enviarDatos({
+        accion: "cancelar",
+        clave: CLAVE_INSTITUCIONAL,
+        id: id
+      });
+
+      if (!respuesta.ok) {
+        mostrarMensaje(respuesta.mensaje || "No se pudo cancelar la reserva.", "error");
+        return;
+      }
+
+      await cargarReservas();
+      mostrarCalendario();
+      actualizarAvisoOcupado();
+
+      mostrarMensaje("Reserva cancelada correctamente.", "ok");
+    }
+
+    function normalizarModulos(reserva) {
+      if (Array.isArray(reserva.modulos)) {
+        return reserva.modulos;
+      }
+
+      if (reserva.modulo) {
+        return [reserva.modulo];
+      }
+
+      return [];
+    }
+
+    function claseRecurso(recurso) {
+      if (recurso === "TV") return "tv";
+      if (recurso === "Tablets") return "tablets";
+      if (recurso === "Proyector") return "proyector";
+      return "";
+    }
+
+    function crearFechaISO(anio, mes, dia) {
+      const mesTexto = String(mes + 1).padStart(2, "0");
+      const diaTexto = String(dia).padStart(2, "0");
+
+      return anio + "-" + mesTexto + "-" + diaTexto;
+    }
+
+    function esHoy(anio, mes, dia) {
+      const hoy = new Date();
+
+      return (
+        hoy.getFullYear() === anio &&
+        hoy.getMonth() === mes &&
+        hoy.getDate() === dia
+      );
+    }
+  </script>
+</body>
+</html>
